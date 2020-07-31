@@ -61,6 +61,12 @@
       background: rgb(172, 222, 213);
       margin: 0px;
     }    
+
+.bubbles {
+  stroke-width: 2px;
+  stroke: white;
+  opacity: .8
+}
     </style>
     </head>
           
@@ -73,17 +79,17 @@
     <div class="row">
       <div class="leftcolumn">
         <div class="ctitle" style="text-align:center">
-          <p><b>COVID-19 Total Cases by Country</b></p> 
+          <p><b>COVID-19 Cases and Deaths by Population</b></p> 
           <div id="main_chart"></div>  
         </div>     
       </div>
       <div class="navbutton">
-        <a href="./second.html" style="float:right">Next Page</a>
+        <a href="./index.html" style="float:right">First Page</a>
+        <a href="./second.html" style="float:left">Previous Page</a>
       </div> 
     </div>
 <script>
-
-    var margin = {top: 40, right: 150, bottom: 100, left: 90},
+    var margin = {top: 40, right: 200, bottom: 60, left: 70},
         width = 1100 - margin.left - margin.right,
         height = 620 - margin.top - margin.bottom;
     
@@ -95,26 +101,23 @@
         .attr("transform",
               "translate(" + margin.left + "," + margin.top + ")");
     
-    d3.csv("./countries.csv", function(data) {
-      var x = d3.scaleBand()
-        .range([ 0, width ])
-        .domain(data.map(function(d) { return d.location; }))
-        .padding(0.2);
+    d3.csv("./covid_state_latest.csv", function(data) {
+
+      var x = d3.scaleSqrt()
+        .domain([100, 2500])
+        .range([0, width ]);
       svg.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x))
-        .selectAll("text")
-          .attr("transform", "translate(-10,0)rotate(-45)")
-          .style("text-anchor", "end");
+        .call(d3.axisBottom(x).ticks(10));
     
       svg.append("text")
           .attr("text-anchor", "middle")
           .attr("x", width / 2)
-          .attr("y", height+80 )
-          .text("Country");
+          .attr("y", height+50 )
+          .text("Cases per 100,000 Residents");
     
       var y = d3.scaleSqrt()
-        .domain([0, 4500000])
+        .domain([0, 200])
         .range([ height, 0]);
       svg.append("g")
         .call(d3.axisLeft(y).ticks(10));
@@ -122,14 +125,18 @@
       svg.append("text")
           .attr("text-anchor", "middle")
           .attr("x", -320)
-          .attr("y", -70 )
+          .attr("y", -40 )
           .attr("transform", "rotate(270)")
-          .text("Total Cases")
+          .text("Deaths per 100,000 Residents")
           .attr("text-anchor", "start")
     
+      var z = d3.scaleSqrt()
+        .domain([570000, 37000000])
+        .range([ 2, 30]);
+    
       var myColor = d3.scaleOrdinal()
-        .domain(["Africa", "Asia", "Europe", "NorthAmerica", "SouthAmerica"])
-        .range(["#c397d3", "#82b6d9", "#70cd95", "#d57267", "#818d98"]);
+        .domain(["Midwest", "Northeast", "South", "West"])
+        .range(["#c397d3", "#82b6d9", "#70cd95", "#d57267"]);
     
       var annotation = d3.select("#main_chart")
           .append("div")
@@ -148,7 +155,7 @@
             .duration(200)
           annotation
             .style("opacity", .7)
-            .html("Total Cases: " + d.total_cases)
+            .html("State: " + d.state)
             .style("left", (d3.event.pageX + 10) + "px")
             .style("top", (d3.event.pageY) + "px")
       }
@@ -166,28 +173,52 @@
 
       var highlight = function(d){
         d3.selectAll(".bubbles").style("opacity", .05)
-        d3.selectAll("."+d).style("opacity", 1)
+        d3.selectAll("."+d).style("opacity", .8)
       }
     
       var noHighlight = function(d){
         d3.selectAll(".bubbles").style("opacity", .8)
       }
     
-      svg.selectAll("mybar")
+      svg.append('g')
+        .selectAll("dot")
         .data(data)
         .enter()
-        .append("rect")
-          .attr("class", function(d) { return "bubbles " + d.continent })
-          .attr("x", function(d) { return x(d.location); })
-          .attr("y", function(d) { return y(d.total_cases); })
-          .attr("width", x.bandwidth())
-          .attr("height", function(d) { return height - y(d.total_cases); })
-          .style("fill", function (d) { return myColor(d.continent); } )
+        .append("circle")
+          .attr("class", function(d) { return "bubbles " + d.region })
+          .attr("cx", function (d) { return x(d.casepop); } )
+          .attr("cy", function (d) { return y(d.deathpop); } )
+          .attr("r", function (d) { return z(d.population); } )
+          .style("fill", function (d) { return myColor(d.region); } )
         .on("mouseover", showAnnotation )
         .on("mouseleave", hideAnnotation )
     
+      svg.append("circle")
+    	.attr("cx",x(1308))
+    	.attr("cy",y(24))
+       	.attr("r", 60)
+    	.attr("fill", "none")  
+        .attr("stroke-width", 4)
+        .attr("stroke-opacity", .4)
+        .attr("stroke-dasharray", "6")
+        .attr("stroke", "red")
+      svg.append("line")
+        .attr("x1", x(1308) )
+        .attr("x2", x(1308) )
+        .attr("y1", y(5) )
+        .attr("y2", y(10) )
+        .attr("stroke", "red")
+        .attr("stroke-opacity", .4)
+
+      svg.append("text")
+        .attr("x", x(1308))
+        .attr("y", y(3.5))
+        .text("California remains in the middle when accounting for population")
+        .style("font-size", "12px")
+        .attr("text-anchor", "middle")
+    
         var size = 20
-        var allgroups = ["Africa", "Asia", "Europe", "NorthAmerica", "SouthAmerica"]
+        var allgroups = ["Midwest", "Northeast", "South", "West"]
         svg.selectAll("myrect")
           .data(allgroups)
           .enter()
@@ -211,31 +242,5 @@
             .style("alignment-baseline", "middle")
             .on("mouseover", highlight)
             .on("mouseleave", noHighlight)
-
-        svg.append("ellipse")
-          .attr("cx",35)
-          .attr("cy",34)
-          .attr("rx", 40)
-          .attr("ry", 60)
-          .attr("r", 40)
-        .attr("fill", "none")  
-          .attr("stroke-width", 4)
-          .attr("stroke-opacity", .4)
-          .attr("stroke-dasharray", "6")
-          .attr("stroke", "red")
-        svg.append("line")
-          .attr("x1", 90 )
-          .attr("x2", 108 )
-          .attr("y1", 34 )
-          .attr("y2", 34 )
-          .attr("stroke", "red")
-          .attr("stroke-opacity", .4)
-
-        svg.append("text")
-          .attr("x", 113)
-          .attr("y", 37)
-          .text("The US has the highest amount of total COVID-19 cases in the world")
-          .style("font-size", "12px")
-          .attr("text-anchor", "left")
       })
     </script>
