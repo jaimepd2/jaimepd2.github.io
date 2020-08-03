@@ -68,15 +68,16 @@
       <h1>COVID-19 Analysis</h1>
     </div>
     <div class="subheader">
-      <h3>fffffff</h3>
+      <h3>New York has been a hotbed for the virus since its arrival to the US. More recently, California has been seeing a huge rise in cases.</h3>
     </div>    
     <div class="row">
       <div class="leftcolumn">
         <div class="ctitle" style="text-align:center">
           <p><b>COVID-19 Cases and Deaths by State</b></p> 
           <div><select id="selectedGroup" title="Select different value to see the changes in chart">
-            <option value="cases">Total Cases</option>
             <option value="deaths">Total Deaths</option>
+            <option value="cases">Total Cases</option>
+
            </select></div>
           <div id="main_chart"></div>  
         </div>     
@@ -185,8 +186,8 @@
             .attr("fill", "#82b6d9")
         })
       }
-      updateChart('deaths');
       updateChart('cases');
+      updateChart('deaths');
       d3.select("#selectedGroup").on("change", function(d) {
         var selectedGroup = d3.select(this).property("value")
         updateChart(selectedGroup)

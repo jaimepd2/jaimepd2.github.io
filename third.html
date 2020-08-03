@@ -74,7 +74,7 @@
       <h1>COVID-19 Analysis</h1>
     </div>
     <div class="subheader">
-      <h3>fffffff</h3>
+      <h3>Viewing cases and deaths per capita gives a different view on ths data. While Californias has the largest number of total cases, they rank in the middle in terms of cases per capita.</h3>
     </div>    
     <div class="row">
       <div class="leftcolumn">
@@ -155,7 +155,8 @@
             .duration(200)
           annotation
             .style("opacity", .7)
-            .html("State: " + d.state)
+            .html("State: " + d.state + "<br />" + "Population: " + d.population + "<br />" + 
+            "Total Cases: " + d.cases + "<br />"  + "Total Deaths: " + d.deaths + "<br />")
             .style("left", (d3.event.pageX + 10) + "px")
             .style("top", (d3.event.pageY) + "px")
       }
